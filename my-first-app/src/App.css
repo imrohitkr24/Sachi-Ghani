@@ -1,0 +1,63 @@
+/* Tailwind v4 core */
+@import "tailwindcss";
+
+/* Root defaults */
+:root {
+  color-scheme: light;
+}
+
+/* Full height for layout */
+html, body, #root {
+  height: 100%;
+}
+
+/* Smooth anchor scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Typography tweaks */
+h1, h2, h3 {
+  letter-spacing: -0.01em;
+}
+
+/* Reusable form inputs */
+.input {
+  @apply w-full rounded-xl border border-lime-300 bg-white px-4 py-3 text-lime-900 placeholder-lime-500 outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-200;
+}
+
+/* Buttons (optional helpers if you prefer classes) */
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-medium transition;
+}
+.btn-primary {
+  @apply bg-lime-600 text-white hover:bg-lime-700;
+}
+.btn-outline {
+  @apply border border-lime-400 text-lime-800 hover:bg-lime-50;
+}
+
+/* Cards */
+.card {
+  @apply rounded-2xl border border-lime-200 bg-white;
+}
+
+/* Badges */
+.badge {
+  @apply inline-block text-xs px-2 py-1 rounded-full bg-lime-100 text-lime-700;
+}
+
+/* Utilities for full-bleed sections if needed */
+.full-bleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+/* Image helper to avoid layout shift */
+.img-cover {
+  @apply w-full h-full object-cover;
+}
