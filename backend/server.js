@@ -44,31 +44,29 @@ const transporter = nodemailer.createTransport({
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
 });
 
-const path = require('path');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Configure Multer for file uploads
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const fs = require('fs');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Configure Multer to use Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'sachi-ghani-proofs',
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+  },
+});
+
 const upload = multer({ storage: storage });
 
-// Serve uploaded files statically
-app.use('/uploads', express.static('uploads'));
-
-// Upload Endpoint
+// Upload Endpoint - Cloudinary
 app.post('/api/upload', (req, res, next) => {
   console.log('Upload request received');
   next();
@@ -78,10 +76,9 @@ app.post('/api/upload', (req, res, next) => {
     console.log('No file in request');
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  console.log('File saved:', req.file.filename);
-  // Return the URL to access the file
-  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-  res.json({ url: fileUrl, filename: req.file.filename });
+  console.log('File saved to Cloudinary:', req.file.path);
+  // Return the Cloudinary URL
+  res.json({ url: req.file.path, filename: req.file.filename });
 });
 
 // Register
@@ -297,4 +294,8 @@ app.delete('/api/feedback/:id', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app;
