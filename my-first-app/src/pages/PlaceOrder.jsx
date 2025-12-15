@@ -1,11 +1,12 @@
+
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const PRODUCTS = [
-  { id: "500ml", name: "Mustard Oil 500 ml", price: 140 },
-  { id: "1l", name: "Mustard Oil 1 L", price: 260 },
-  { id: "5l", name: "Mustard Oil 5 L Jar", price: 1200 },
+  { id: "500ml", name: "Mustard Oil 500 ml", price: 95 },
+  { id: "1l", name: "Mustard Oil 1 L", price: 165 },
+  { id: "5l", name: "Mustard Oil 5 L Jar", price: 800 },
 ];
 
 export default function PlaceOrder() {
@@ -13,7 +14,10 @@ export default function PlaceOrder() {
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
   const [quantities, setQuantities] = useState({});
-  const [form, setForm] = useState({ fullName: '', phone: '', city: '', utr: '' });
+  const [deliveryMethod, setDeliveryMethod] = useState('delivery');
+  const [paymentProof, setPaymentProof] = useState(null);
+  const [paymentProofName, setPaymentProofName] = useState(null);
+  const [form, setForm] = useState({ fullName: '', phone: '', address: '', district: '', pincode: '', utr: '' });
 
   // Load persistent cart on mount
   useEffect(() => {
@@ -82,14 +86,14 @@ export default function PlaceOrder() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ items, total: cartTotal, customerDetails: form })
+        body: JSON.stringify({ items, total: cartTotal, customerDetails: form, deliveryMethod, paymentProof })
       });
 
       const data = await res.json();
       if (res.ok) {
         // Clear cart locally and optionally on server (server could handle this but we'll do it via state reset which triggers empty PUT)
         setQuantities({});
-        alert('Order placed successfully! Order ID: ' + (data.order?._id || ''));
+        alert('Order placed successfully! Order ID: ' + (data.order?.orderId || data.order?._id || ''));
         navigate('/orders');
       } else {
         alert('Failed: ' + (data.message || 'Unknown error'));
@@ -113,7 +117,7 @@ export default function PlaceOrder() {
   };
 
   return (
-    <div className="min-h-screen bg-lime-50 p-6 font-sans">
+    <div className="min-h-screen bg-lime-50 p-4 md:p-8 font-sans pb-32 md:pb-8">
       <div className="max-w-6xl mx-auto flex flex-col items-center mb-6">
         <Link to="/" className="text-lime-700 hover:underline font-bold text-lg">← Back to Home</Link>
       </div>
@@ -164,12 +168,37 @@ export default function PlaceOrder() {
 
         {/* Right Main Content */}
         <div className="md:col-span-2 space-y-6">
-          {/* Address Form */}
+          {/* Address / Pickup Toggle */}
           <div className="bg-white p-6 rounded-2xl shadow-sm">
+            <div className="flex gap-4 mb-6">
+              <label className={`flex-1 cursor-pointer p-4 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${deliveryMethod === 'delivery' ? 'border-lime-600 bg-lime-50 text-lime-800' : 'border-gray-200 text-gray-500'}`}>
+                <input type="radio" name="method" className="hidden" checked={deliveryMethod === 'delivery'} onChange={() => setDeliveryMethod('delivery')} />
+                <span>🚚 Home Delivery</span>
+              </label>
+              <label className={`flex-1 cursor-pointer p-4 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${deliveryMethod === 'pickup' ? 'border-lime-600 bg-lime-50 text-lime-800' : 'border-gray-200 text-gray-500'}`}>
+                <input type="radio" name="method" className="hidden" checked={deliveryMethod === 'pickup'} onChange={() => setDeliveryMethod('pickup')} />
+                <span>🏪 Store Pickup</span>
+              </label>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input name="fullName" placeholder="Full Name" className="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-lime-300 outline-none" onChange={handleFormChange} />
               <input name="phone" placeholder="Phone (10 digits)" type="number" className="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-lime-300 outline-none" onChange={handleFormChange} />
-              <input name="city" placeholder="City / Address" className="p-3 border rounded-lg bg-gray-50 md:col-span-2 focus:ring-2 focus:ring-lime-300 outline-none" onChange={handleFormChange} />
+
+              {deliveryMethod === 'delivery' ? (
+                <>
+                  <input name="address" placeholder="Address" className="p-3 border rounded-lg bg-gray-50 md:col-span-2 focus:ring-2 focus:ring-lime-300 outline-none" onChange={handleFormChange} />
+                  <input name="district" placeholder="District" className="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-lime-300 outline-none" onChange={handleFormChange} />
+                  <input name="pincode" placeholder="Pin Code" type="number" className="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-lime-300 outline-none" onChange={handleFormChange} />
+                </>
+              ) : (
+                <div className="md:col-span-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-yellow-800">
+                  <h4 className="font-bold mb-1">Pickup Location</h4>
+                  <p className="text-sm">Sachi Ghani Store</p>
+                  <p className="text-sm">Near Main Market, City Center</p>
+                  <p className="text-xs mt-2 text-yellow-600">Please collect your order from the above address.</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -211,19 +240,51 @@ export default function PlaceOrder() {
                 <label className="text-sm font-semibold text-gray-600 mb-2 block">Enter UTR / Transaction ID</label>
                 <input name="utr" placeholder="Eg: AX123456789" className="w-full p-3 border rounded-lg bg-gray-50 outline-none focus:border-lime-500 transition-colors" onChange={handleFormChange} />
               </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-2 block">Or Upload Payment Proof</label>
-                <input type="file" className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-lime-50 file:text-lime-700
-                      hover:file:bg-lime-100
-                    "/>
-              </div>
+
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-between items-center pt-4">
+              <div className="flex-1 mr-4">
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  id="proof-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    try {
+                      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+                      const res = await fetch(`${apiBase}/api/upload`, {
+                        method: 'POST',
+                        body: formData
+                      });
+                      const data = await res.json();
+                      if (data.url) {
+                        setPaymentProof(data.url);
+                        setPaymentProofName(file.name);
+                        alert('Proof uploaded successfully');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert('Upload failed');
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => document.getElementById('proof-upload').click()}
+                  className={`w-full py-3 rounded-lg border-2 border-dashed flex items-center justify-center gap-2 transition-colors ${paymentProof ? 'border-lime-500 bg-lime-50 text-lime-700' : 'border-gray-300 text-gray-500 hover:border-lime-400'}`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  {paymentProofName || "Upload Payment Screenshot"}
+                </button>
+              </div>
+
               <button
                 onClick={handlePlaceOrder}
                 disabled={placing || totalItems === 0}
@@ -238,6 +299,27 @@ export default function PlaceOrder() {
         </div>
 
       </div>
+
+      {/* Mobile Sticky Footer */}
+      {totalItems > 0 && (
+        <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 flex items-center justify-between">
+          <div>
+            <span className="text-xs text-gray-500 uppercase font-semibold">Total</span>
+            <div className="text-xl font-bold text-lime-800">₹{cartTotal}</div>
+            <div className="text-xs text-gray-400">{totalItems} items</div>
+          </div>
+          <button
+            onClick={() => {
+              // Scroll to payment section or open modal (for now just scroll to bottom form)
+              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }}
+            className="bg-lime-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+          >
+            Checkout
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

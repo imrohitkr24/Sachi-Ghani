@@ -1,5 +1,5 @@
 // App.jsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from "./context/AuthContext";
 
 import Home from './pages/Home';
@@ -8,43 +8,66 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OrdersPage from './pages/OrdersPage';
+import FeedbackPage from './pages/FeedbackPage';
 import Header from './Header';
 import WhatsAppButton from './components/WhatsAppButton';
-import Footer from './components/Footer';
+// Layouts
+import MainLayout from './components/layouts/MainLayout';
+import AdminLayout from './components/layouts/AdminLayout';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Header />
-        <WhatsAppButton />
-
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* Main User Portal (Shop) */}
+          <Route element={<MainLayout />}>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
 
-          {/* Protected Routes */}
+            {/* Protected Shop Routes */}
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrdersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/place-order"
+              element={
+                <ProtectedRoute>
+                  <PlaceOrder />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+
+          {/* Admin Portal */}
           <Route
-            path="/orders"
+            path="/admin"
             element={
-              <ProtectedRoute>
-                <OrdersPage />
+              <ProtectedRoute adminOnly={true}>
+                <AdminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            {/* Future admin routes go here */}
+          </Route>
 
-          <Route
-            path="/place-order"
-            element={
-              <ProtectedRoute>
-                <PlaceOrder />
-              </ProtectedRoute>
-            }
-          />
+          {/* Fallback for unknown routes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <Footer />
       </BrowserRouter>
     </AuthProvider>
   );

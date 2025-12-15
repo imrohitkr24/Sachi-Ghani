@@ -3,35 +3,47 @@ import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 export default function OrdersPage() {
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !user) return;
     setLoading(true);
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
-    fetch(`${apiBase}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } })
+
+    // If admin, fetch ALL orders. If user, fetch MY orders.
+    const endpoint = user.isAdmin ? `${apiBase}/api/orders` : `${apiBase}/api/orders/me`;
+
+    fetch(endpoint, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
-        setOrders(Array.isArray(data) ? data : []);
+        // Admin endpoint returns { totalOrders, orders: [...] }
+        // User endpoint returns [...]
+        let fetchedOrders = [];
+        if (Array.isArray(data)) {
+          fetchedOrders = data;
+        } else if (data.orders && Array.isArray(data.orders)) {
+          fetchedOrders = data.orders;
+        }
+        setOrders(fetchedOrders);
         setLoading(false);
       })
       .catch(err => {
         console.error(err);
         setLoading(false);
       });
-  }, [token]);
+  }, [token, user]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-lime-800">Loading orders...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 font-sans">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 md:py-10 md:px-8 font-sans">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">My Orders</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{user?.isAdmin ? "All Orders (Admin View)" : "My Orders"}</h1>
           <Link to="/" className="text-lime-700 hover:text-lime-800 font-semibold px-4 py-2 border border-lime-200 rounded-lg hover:bg-lime-50 transition-colors">
             ← Back to Home
           </Link>
@@ -59,6 +71,12 @@ export default function OrdersPage() {
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Date Placed</span>
                     <span className="text-sm text-gray-700 font-medium">
                       {new Date(order.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Method</span>
+                    <span className="text-sm text-gray-700 font-medium capitalize">
+                      {order.deliveryMethod === 'pickup' ? '🏪 Pickup' : '🚚 Delivery'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -92,8 +110,26 @@ export default function OrdersPage() {
                   {order.customerDetails && (
                     <div className="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-400 flex flex-wrap gap-4">
                       <span>Phone: {order.customerDetails.phone}</span>
-                      <span>City: {order.customerDetails.city}</span>
+                      {order.deliveryMethod === 'pickup' ? (
+                        <span className="text-lime-700 font-semibold">Store Pickup (Self Collection)</span>
+                      ) : (
+                        <>
+                          <span>Address: {order.customerDetails.address || order.customerDetails.city}</span>
+                          {order.customerDetails.district && <span>District: {order.customerDetails.district}</span>}
+                          {order.customerDetails.pincode && <span>Pin: {order.customerDetails.pincode}</span>}
+                        </>
+                      )}
                       {order.customerDetails.utr && <span>UTR: {order.customerDetails.utr}</span>}
+                      {order.paymentProof && (
+                        <a
+                          href={order.paymentProof}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white bg-lime-600 px-2 py-1 rounded text-xs font-bold hover:bg-lime-700"
+                        >
+                          View Payment Proof
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>

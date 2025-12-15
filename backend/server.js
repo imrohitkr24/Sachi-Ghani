@@ -44,6 +44,46 @@ const transporter = nodemailer.createTransport({
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
 });
 
+const path = require('path');
+const multer = require('multer');
+
+// Configure Multer for file uploads
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const fs = require('fs');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR);
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
+
+// Upload Endpoint
+app.post('/api/upload', (req, res, next) => {
+  console.log('Upload request received');
+  next();
+}, upload.single('file'), (req, res) => {
+  console.log('File upload processed');
+  if (!req.file) {
+    console.log('No file in request');
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  console.log('File saved:', req.file.filename);
+  // Return the URL to access the file
+  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl, filename: req.file.filename });
+});
+
 // Register
 app.post('/auth/register', authLimiter, async (req, res) => {
   try {
@@ -60,8 +100,8 @@ app.post('/auth/register', authLimiter, async (req, res) => {
     await user.save();
 
     // issue token
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -80,8 +120,8 @@ app.post('/auth/login', authLimiter, async (req, res) => {
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -118,13 +158,16 @@ app.put('/api/cart', authMiddleware, async (req, res) => {
 // Create Order (Protected)
 app.post('/api/orders', authMiddleware, async (req, res) => {
   try {
-    const { items, total } = req.body;
+    const { items, total, customerDetails, deliveryMethod, paymentProof } = req.body;
     if (!items || items.length === 0) return res.status(400).json({ message: 'No items in order' });
 
     const order = new Order({
       user: req.user.id,
       items,
       total,
+      customerDetails,
+      paymentProof,
+      deliveryMethod,
       status: 'placed'
     });
 
@@ -195,6 +238,62 @@ app.post('/auth/reset', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+const Feedback = require('./models/feedback');
+
+// Get Feedback
+app.get('/api/feedback', async (req, res) => {
+  try {
+    const feed = await Feedback.find().sort({ createdAt: -1 }).limit(50);
+    res.json(feed);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching feedback' });
+  }
+});
+
+// Post Feedback
+app.post('/api/feedback', async (req, res) => {
+  try {
+    console.log('POST /api/feedback body:', req.body);
+    const { name, message, rating } = req.body;
+    if (!name || !message) return res.status(400).json({ message: 'Name and message required' });
+
+    const feedback = new Feedback({ name, message, rating });
+    await feedback.save();
+    res.status(201).json(feedback);
+  } catch (err) {
+    console.error('Error saving feedback:', err);
+    res.status(500).json({ message: 'Server error saving feedback' });
+  }
+});
+
+// Update Feedback
+app.put('/api/feedback/:id', async (req, res) => {
+  try {
+    const { name, message, rating } = req.body;
+    const feedback = await Feedback.findByIdAndUpdate(
+      req.params.id,
+      { name, message, rating },
+      { new: true }
+    );
+    res.json(feedback);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating feedback' });
+  }
+});
+
+// Delete Feedback
+app.delete('/api/feedback/:id', async (req, res) => {
+  try {
+    await Feedback.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Feedback deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error deleting feedback' });
   }
 });
 

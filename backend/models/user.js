@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   ],
   resetToken: String,
   resetExpires: Date,
+  isAdmin: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 
