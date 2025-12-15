@@ -1,8 +1,14 @@
-export default function ProductCard({ name, price, desc, badge }) {
+export default function ProductCard({ name, price, desc, badge, image }) {
   return (
-    <div className="rounded-2xl border border-lime-200 p-5 hover:shadow-md transition">
-      <div className="h-40 rounded-xl bg-lime-50 mb-4 flex items-center justify-center">
-        <span className="text-lime-700 text-sm">{name}</span>
+    <div className="rounded-2xl border border-lime-200 p-4 hover:shadow-xl transition bg-white flex flex-col h-full">
+      <div className="h-96 rounded-xl bg-lime-50 mb-4 overflow-hidden relative group">
+        {image ? (
+          <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-lime-700 text-sm">{name}</span>
+          </div>
+        )}
       </div>
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-lime-900">{name}</h3>

@@ -25,8 +25,12 @@ export default function Hero() {
           </ul>
         </div>
         <div className="relative">
-          <div className="rounded-2xl shadow-lg bg-gradient-to-b from-lime-100/60 to-white p-10">
-            <div className="aspect-[4/3] md:aspect-[3/4] rounded-xl bg-[url('/bottle.jpg')] bg-cover bg-center" />
+          <div className="rounded-2xl shadow-lg bg-gradient-to-b from-lime-100/60 to-white p-4">
+            <img
+              src="/hero-family.jpg"
+              alt="Family cooking with Sachi Ghani"
+              className="w-full h-auto rounded-xl object-cover shadow-sm"
+            />
           </div>
           <div className="absolute -bottom-4 -left-4 bg-white border border-lime-200 rounded-xl px-4 py-2 text-xs text-lime-800 shadow">
             Sachi Ghani • Since 2024
