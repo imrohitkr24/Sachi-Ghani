@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { API_URL } from "../config";
 
 // Updated single-file React component (Tailwind CSS assumed)
 // New behavior:
@@ -120,7 +121,7 @@ export default function Contact() {
       if (proofFile) {
         const formData = new FormData();
         formData.append('file', proofFile);
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+        const apiBase = API_URL;
         const uploadRes = await fetch(`${apiBase}/api/upload`, { method: 'POST', body: formData });
         const uploadData = await uploadRes.json();
         if (uploadData.url) {
@@ -151,7 +152,7 @@ export default function Contact() {
         paymentProof: uploadedProofUrl
       };
 
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      const apiBase = API_URL;
       const res = await fetch(`${apiBase}/api/orders`, {
         method: 'POST',
         headers: {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 export default function Testimonials() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -12,7 +13,7 @@ export default function Testimonials() {
   }, []);
 
   const fetchFeedbacks = () => {
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    const apiBase = API_URL;
     fetch(`${apiBase}/api/feedback`)
       .then(res => res.json())
       .then(data => {
@@ -33,7 +34,7 @@ export default function Testimonials() {
 
     setSubmitting(true);
     try {
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      const apiBase = API_URL;
       const res = await fetch(`${apiBase}/api/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

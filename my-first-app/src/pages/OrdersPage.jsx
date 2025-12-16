@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { API_URL } from '../config';
 
 export default function OrdersPage() {
   const { token, user } = useContext(AuthContext);
@@ -10,7 +11,7 @@ export default function OrdersPage() {
   useEffect(() => {
     if (!token || !user) return;
     setLoading(true);
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    const apiBase = API_URL;
 
     // If admin, fetch ALL orders. If user, fetch MY orders.
     const endpoint = user.isAdmin ? `${apiBase}/api/orders` : `${apiBase}/api/orders/me`;

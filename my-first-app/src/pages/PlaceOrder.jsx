@@ -1,6 +1,7 @@
 
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../config';
 import { useNavigate, Link } from 'react-router-dom';
 
 const PRODUCTS = [
@@ -22,7 +23,7 @@ export default function PlaceOrder() {
   // Load persistent cart on mount
   useEffect(() => {
     if (!token) return;
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    const apiBase = API_URL;
     fetch(`${apiBase}/api/cart`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -38,7 +39,7 @@ export default function PlaceOrder() {
   // Save cart to backend whenever quantities change
   useEffect(() => {
     if (!token) return;
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    const apiBase = API_URL;
 
     // Convert quantities map to array for saving
     const cart = PRODUCTS.map(p => {
@@ -79,7 +80,7 @@ export default function PlaceOrder() {
     }).filter(Boolean);
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      const apiBase = API_URL;
       const res = await fetch(`${apiBase}/api/orders`, {
         method: 'POST',
         headers: {
@@ -259,7 +260,7 @@ export default function PlaceOrder() {
                     formData.append('file', file);
 
                     try {
-                      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+                      const apiBase = API_URL;
                       const res = await fetch(`${apiBase}/api/upload`, {
                         method: 'POST',
                         body: formData

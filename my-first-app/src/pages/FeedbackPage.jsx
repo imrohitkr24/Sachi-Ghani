@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from "../config";
 
 export default function FeedbackPage() {
     const [feedbacks, setFeedbacks] = useState([]);
@@ -14,7 +15,7 @@ export default function FeedbackPage() {
     }, []);
 
     const fetchFeedbacks = () => {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+        const apiBase = API_URL;
         fetch(`${apiBase}/api/feedback`)
             .then(res => res.json())
             .then(data => setFeedbacks(data))
@@ -27,7 +28,7 @@ export default function FeedbackPage() {
 
         setSubmitting(true);
         try {
-            const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+            const apiBase = API_URL;
             const res = await fetch(`${apiBase}/api/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -52,7 +53,7 @@ export default function FeedbackPage() {
     const handleDelete = async (id) => {
         if (!confirm("Are you sure you want to delete this feedback?")) return;
         try {
-            const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+            const apiBase = API_URL;
             await fetch(`${apiBase}/api/feedback/${id}`, { method: 'DELETE' });
             fetchFeedbacks();
         } catch (err) { console.error(err); alert("Failed to delete"); }
@@ -65,7 +66,7 @@ export default function FeedbackPage() {
 
     const handleUpdate = async (id) => {
         try {
-            const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+            const apiBase = API_URL;
             await fetch(`${apiBase}/api/feedback/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

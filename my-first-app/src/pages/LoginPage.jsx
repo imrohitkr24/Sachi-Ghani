@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { API_URL } from "../config";
 
 export default function LoginPage() {
   const { login } = useContext(AuthContext);
@@ -21,7 +22,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      const apiBase = API_URL;
       const res = await fetch(`${apiBase}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
