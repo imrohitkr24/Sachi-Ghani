@@ -354,7 +354,7 @@ export default function Contact() {
                     <div className="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-yellow-800">
                       <h4 className="font-bold mb-1">Pickup Location</h4>
                       <p className="text-sm">Sachi Ghani Store</p>
-                      <p className="text-sm">Near Main Market, City Center</p>
+                      <p className="text-sm">Bihar Muzaffarpur Kachi Packi chauk Gupta flour mill Pin code 842002</p>
                     </div>
                   )}
 
