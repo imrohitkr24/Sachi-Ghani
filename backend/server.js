@@ -183,14 +183,28 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
   }
 });
 
-// Get User Orders
-app.get('/api/orders', authMiddleware, async (req, res) => {
+// Get User Orders (Logged in user)
+app.get('/api/orders/me', authMiddleware, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error fetching orders' });
+    res.status(500).json({ message: 'Server error fetching user orders' });
+  }
+});
+
+// Get All Orders (Admin only)
+app.get('/api/orders', authMiddleware, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json({ orders, totalOrders: orders.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching all orders' });
   }
 });
 
