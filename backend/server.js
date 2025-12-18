@@ -19,13 +19,16 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // app.use(helmet()); moved below cors
+const allowedOrigin = process.env.FRONTEND_URL || '*';
+console.log('CORS allowed origin:', allowedOrigin);
 app.use(cors({
-  origin: '*',
+  origin: allowedOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(helmet());
-app.options('*', cors());
+// enable CORS preflight using same origin config
+app.options('*', cors({ origin: allowedOrigin }));
 app.use(bodyParser.json());
 
 // basic rate limiter for auth endpoints
@@ -86,6 +89,9 @@ app.post('/api/upload', (req, res, next) => {
   // Return the Cloudinary URL
   res.json({ url: req.file.path, filename: req.file.filename });
 });
+
+// Health check endpoint
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Register
 app.post('/auth/register', authLimiter, async (req, res) => {
