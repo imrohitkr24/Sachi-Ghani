@@ -30,21 +30,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 /* =======================
-   CORS (FIXED)
+   ✅ FINAL CORS (SIMPLE & WORKING)
 ======================= */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://sachi-ghani.vercel.app"
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // Postman / server calls
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("CORS not allowed"));
-  },
+  origin: "https://sachi-ghani.vercel.app",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -77,7 +66,7 @@ mongoose
   });
 
 /* =======================
-   EMAIL (FORGOT PASSWORD)
+   EMAIL
 ======================= */
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -107,8 +96,12 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 /* =======================
-   HEALTH CHECK
+   ROOT & HEALTH
 ======================= */
+app.get("/", (req, res) => {
+  res.send("Sachi Ghani Backend is Live 🚀");
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
@@ -139,7 +132,12 @@ app.post("/auth/register", authLimiter, async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin
+      }
     });
   } catch (err) {
     console.error(err);
@@ -155,10 +153,12 @@ app.post("/auth/login", authLimiter, async (req, res) => {
       return res.status(400).json({ message: "Missing fields" });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user)
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) return res.status(400).json({ message: "Invalid credentials" });
+    if (!match)
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, email: user.email, isAdmin: user.isAdmin },
@@ -168,7 +168,12 @@ app.post("/auth/login", authLimiter, async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin
+      }
     });
   } catch (err) {
     console.error("Login error:", err);
