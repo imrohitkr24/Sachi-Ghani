@@ -9,8 +9,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OrdersPage from './pages/OrdersPage';
 import FeedbackPage from './pages/FeedbackPage';
-import Header from './Header';
-import WhatsAppButton from './components/WhatsAppButton';
+// Header and WhatsAppButton are used in MainLayout, not here
 // Layouts
 import MainLayout from './components/layouts/MainLayout';
 import AdminLayout from './components/layouts/AdminLayout';
