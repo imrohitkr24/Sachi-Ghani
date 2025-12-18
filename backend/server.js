@@ -30,7 +30,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 /* =======================
-   ✅ FINAL CORS (SIMPLE & WORKING)
+   ✅ CORS (FIXED + OPTIONS)
 ======================= */
 app.use(cors({
   origin: "https://sachi-ghani.vercel.app",
@@ -39,11 +39,14 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
+// 🔥 Preflight request fix (MOST IMPORTANT)
+app.options("*", cors());
+
 /* =======================
    MIDDLEWARE
 ======================= */
-app.use(helmet());
 app.use(bodyParser.json());
+app.use(helmet());
 
 /* =======================
    RATE LIMITER
