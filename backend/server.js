@@ -30,7 +30,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 /* =======================
-   ✅ CORS (FIXED + OPTIONS)
+   ✅ CORS (FINAL FIX)
 ======================= */
 app.use(cors({
   origin: "https://sachi-ghani.vercel.app",
@@ -39,8 +39,16 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// 🔥 Preflight request fix (MOST IMPORTANT)
+// 🔥 Preflight (OPTIONS) fix
 app.options("*", cors());
+
+// 🔥 Ensure OPTIONS never breaks due to any middleware
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 /* =======================
    MIDDLEWARE
@@ -49,11 +57,12 @@ app.use(bodyParser.json());
 app.use(helmet());
 
 /* =======================
-   RATE LIMITER
+   RATE LIMITER (FIXED)
 ======================= */
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
+  skip: (req) => req.method === "OPTIONS",
   message: { message: "Too many requests, try later." }
 });
 
