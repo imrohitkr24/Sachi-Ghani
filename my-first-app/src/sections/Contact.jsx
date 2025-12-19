@@ -166,7 +166,7 @@ export default function Contact() {
 
       if (res.ok) {
         setSavedOrder({
-          id: data.order.orderId || data.order._id,
+          id: data.orderId || data._id || (data.order && (data.order.orderId || data.order._id)),
           name: customerName,
           phone: customerPhone,
           address,

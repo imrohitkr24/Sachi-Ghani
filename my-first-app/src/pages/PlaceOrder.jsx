@@ -94,7 +94,7 @@ export default function PlaceOrder() {
       if (res.ok) {
         // Clear cart locally and optionally on server (server could handle this but we'll do it via state reset which triggers empty PUT)
         setQuantities({});
-        alert('Order placed successfully! Order ID: ' + (data.order?.orderId || data.order?._id || ''));
+        alert('Order placed successfully! Order ID: ' + (data.orderId || data._id || data.order?.orderId || data.order?._id || ''));
         navigate('/orders');
       } else {
         alert('Failed: ' + (data.message || 'Unknown error'));
