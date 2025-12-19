@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,11 +50,9 @@ export default function RegisterPage() {
         throw new Error("Unexpected server response.");
       }
 
-      // Redirect to login with success message
-      navigate("/login", {
-        state: { message: "You are registered now you can log in" },
-        replace: true
-      });
+      // Show success modal instead of immediate redirect
+      setShowModal(true);
+
     } catch (err) {
       console.error("Register error:", err);
       setError(err.message || "Registration failed. Try again later.");
@@ -61,6 +60,34 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  if (showModal) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 bg-opacity-50 fixed inset-0 z-50 px-4">
+        <div className="max-w-sm w-full bg-white rounded-2xl shadow-xl p-6 text-center animate-bounce-in">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Registration Successful!</h3>
+          <div className="mt-2">
+            <p className="text-sm text-gray-500">
+              You are registered now you can log in.
+            </p>
+          </div>
+          <div className="mt-5">
+            <button
+              onClick={() => navigate("/login", { state: { email: email } })}
+              className="w-full inline-flex justify-center rounded-full border border-transparent shadow-sm px-4 py-2 bg-lime-600 text-base font-medium text-white hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500 sm:text-sm"
+            >
+              Login Now
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-lime-50 px-4">

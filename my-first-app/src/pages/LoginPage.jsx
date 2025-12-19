@@ -9,7 +9,7 @@ export default function LoginPage() {
   const location = useLocation();
   const message = location.state?.message;
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(location.state?.email || "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
