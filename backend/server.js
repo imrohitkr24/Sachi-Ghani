@@ -33,7 +33,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
    ✅ CORS (FINAL FIX)
 ======================= */
 app.use(cors({
-  origin: "https://sachi-ghani.vercel.app",
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -54,7 +54,12 @@ app.use((req, res, next) => {
    MIDDLEWARE
 ======================= */
 app.use(bodyParser.json());
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+
 
 /* =======================
    RATE LIMITER (FIXED)
