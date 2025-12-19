@@ -20,6 +20,9 @@ export default function PlaceOrder() {
   const [paymentProofName, setPaymentProofName] = useState(null);
   const [form, setForm] = useState({ fullName: '', phone: '', address: '', district: '', pincode: '', utr: '' });
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [orderId, setOrderId] = useState(null);
+
   // Load persistent cart on mount
   useEffect(() => {
     if (!token) return;
@@ -71,6 +74,12 @@ export default function PlaceOrder() {
     if (totalItems === 0) { alert('Multi-select at least one product'); return; }
     if (!form.phone || form.phone.length !== 10) { alert('Enter valid 10-digit phone'); return; }
 
+    // UTR Validation: Exact 12 digits
+    if (form.utr && form.utr.length !== 12) {
+      alert('UTR must be exactly 12 digits');
+      return;
+    }
+
     setPlacing(true);
 
     const items = PRODUCTS.map(p => {
@@ -94,8 +103,11 @@ export default function PlaceOrder() {
       if (res.ok) {
         // Clear cart locally and optionally on server (server could handle this but we'll do it via state reset which triggers empty PUT)
         setQuantities({});
-        alert('Order placed successfully! Order ID: ' + (data.orderId || data._id || data.order?.orderId || data.order?._id || ''));
-        navigate('/orders');
+
+        // Show success modal
+        setOrderId(data.orderId || data._id || data.order?.orderId || data.order?._id || 'Unknown');
+        setShowSuccessModal(true);
+
       } else {
         alert('Failed: ' + (data.message || 'Unknown error'));
       }
@@ -319,6 +331,30 @@ export default function PlaceOrder() {
             Checkout
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
           </button>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-bounce-in">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+              <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Order Placed!</h3>
+            <p className="text-gray-500 mb-6">
+              Thank you for your order. <br />
+              Order ID: <span className="font-mono font-bold text-gray-800">{orderId}</span>
+            </p>
+            <button
+              onClick={() => navigate('/orders')}
+              className="w-full bg-lime-600 text-white py-3 rounded-xl font-bold hover:bg-lime-700 transition-colors shadow-lg"
+            >
+              View My Orders
+            </button>
+          </div>
         </div>
       )}
     </div>
