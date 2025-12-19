@@ -75,8 +75,8 @@ export default function PlaceOrder() {
     if (!form.phone || form.phone.length !== 10) { alert('Enter valid 10-digit phone'); return; }
 
     // UTR Validation: Exact 12 digits
-    if (form.utr && form.utr.length !== 12) {
-      alert('UTR must be exactly 12 digits');
+    if (form.utr && !/^\d{12}$/.test(form.utr)) {
+      alert('UTR must be exactly 12 numeric digits');
       return;
     }
 
@@ -250,8 +250,11 @@ export default function PlaceOrder() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
               <div>
-                <label className="text-sm font-semibold text-gray-600 mb-2 block">Enter UTR / Transaction ID</label>
-                <input name="utr" placeholder="Eg: AX123456789" className="w-full p-3 border rounded-lg bg-gray-50 outline-none focus:border-lime-500 transition-colors" onChange={handleFormChange} />
+                <label className="text-sm font-semibold text-gray-600 mb-2 block">Enter UTR / Transaction ID (12 Digits)</label>
+                <input name="utr" placeholder="Eg: 123456789012" maxLength={12} className="w-full p-3 border rounded-lg bg-gray-50 outline-none focus:border-lime-500 transition-colors" onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, ''); // Only allow numbers
+                  setForm({ ...form, utr: val });
+                }} value={form.utr} />
               </div>
 
             </div>
