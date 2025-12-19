@@ -49,9 +49,11 @@ export default function RegisterPage() {
         throw new Error("Unexpected server response.");
       }
 
-      // login via context
-      login({ token: data.token, user: data.user });
-      navigate("/place-order", { replace: true });
+      // Redirect to login with success message
+      navigate("/login", {
+        state: { message: "You are registered now you can log in" },
+        replace: true
+      });
     } catch (err) {
       console.error("Register error:", err);
       setError(err.message || "Registration failed. Try again later.");

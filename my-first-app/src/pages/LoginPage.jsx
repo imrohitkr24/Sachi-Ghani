@@ -1,11 +1,13 @@
 import React, { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { API_URL } from "../config";
 
 export default function LoginPage() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const message = location.state?.message;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -65,6 +67,13 @@ export default function LoginPage() {
         <h1 className="text-3xl font-extrabold text-lime-700">
           Welcome to the Sachi Ghani family
         </h1>
+
+        {message && (
+          <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-md text-sm font-medium text-center border border-green-200">
+            {message}
+          </div>
+        )}
+
         <p className="mt-2 text-sm text-lime-600">
           Join us for pure cold-pressed goodness. Login to place orders and track them.
         </p>
