@@ -23,6 +23,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
+      console.log(API_URL);
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
