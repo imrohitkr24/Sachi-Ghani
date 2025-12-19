@@ -11,6 +11,7 @@ import { API_URL } from "../config";
 export default function Contact() {
   const { user, token } = useContext(AuthContext);
   const [status, setStatus] = useState("idle"); // idle | sending | done
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Customer fields
   const [customerName, setCustomerName] = useState("");
@@ -93,6 +94,7 @@ export default function Contact() {
     setProofFile(null);
     setPaymentMethod("UPI");
     setStatus("idle");
+    setShowSuccessModal(false);
   };
 
   const handleSubmit = async (e) => {
@@ -105,6 +107,11 @@ export default function Contact() {
 
     if (!canSubmitOrder) {
       alert("Please enter the UTR or upload payment proof before submitting the order.");
+      return;
+    }
+
+    if (utr && !/^\d{12}$/.test(utr)) {
+      alert("UTR must be exactly 12 numeric digits");
       return;
     }
 
@@ -192,7 +199,9 @@ export default function Contact() {
         setQty5l(0);
         setUtr("");
         setProofFile(null);
+        setProofFile(null);
         setStatus("done");
+        setShowSuccessModal(true);
       } else {
         alert("Failed to place order: " + (data.message || "Unknown error"));
         setStatus("idle");
@@ -259,70 +268,26 @@ export default function Contact() {
               </div>
             ) : (
               <>
-                {/* Confirmation panel shown when order placed */}
-                {status === "done" && savedOrder && (
-                  <div className="mb-6 p-6 rounded-2xl bg-white shadow-2xl border-l-4 border-lime-600">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h2 className="text-xl font-bold text-lime-900">Order Placed Successfully!</h2>
-                        <p className="text-sm text-gray-600 mt-1">Thank you. We've received your payment proof and will verify the transaction shortly.</p>
-
-                        <div className="mt-4 text-sm text-gray-700 grid grid-cols-2 gap-2">
-                          <div>Order ID</div>
-                          <div className="font-mono text-right">{savedOrder.id}</div>
-
-                          <div>Name</div>
-                          <div className="text-right">{savedOrder.name}</div>
-
-                          <div>Phone</div>
-                          <div className="text-right">{savedOrder.phone}</div>
-
-                          <div>Method</div>
-                          <div className="text-right capitalize font-semibold">{savedOrder.deliveryMethod || 'delivery'}</div>
-
-                          {savedOrder.deliveryMethod === 'pickup' ? (
-                            <>
-                              <div>Pickup At</div>
-                              <div className="text-right text-lime-700">Sachi Ghani Store</div>
-                            </>
-                          ) : (
-                            <>
-                              <div>Address</div>
-                              <div className="text-right">{savedOrder.address}</div>
-
-                              <div>District</div>
-                              <div className="text-right">{savedOrder.district || "-"}</div>
-
-                              <div>Pin Code</div>
-                              <div className="text-right">{savedOrder.pincode || "-"}</div>
-                            </>
-                          )}
-
-                          <div>UTR</div>
-                          <div className="text-right">{savedOrder.utr || "-"}</div>
-
-                          <div>Proof</div>
-                          <div className="text-right">{savedOrder.proofName || "-"}</div>
-                        </div>
-
-                        <div className="mt-4">
-                          <div className="text-sm font-semibold">Items</div>
-                          <ul className="mt-2 list-disc list-inside text-sm text-gray-700">
-                            {savedOrder.items.map((it) => (
-                              <li key={it.pack}>{it.pack} × {it.qty} — ₹{it.subtotal}</li>
-                            ))}
-                          </ul>
-                        </div>
+                {/* Success Modal */}
+                {showSuccessModal && savedOrder && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-bounce-in">
+                      <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                        <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
                       </div>
-
-                      <div className="text-right">
-                        <div className="text-sm text-gray-600">Total</div>
-                        <div className="text-2xl font-bold text-lime-900">₹{savedOrder.total}</div>
-                        <div className="mt-4 flex flex-col gap-2">
-                          <button onClick={() => { setSavedOrder(null); resetForm(); }} className="px-4 py-2 rounded bg-lime-600 text-white">Place another order</button>
-                          <a href={`https://wa.me/91${merchantNumber}?text=I have placed order ${savedOrder.id} (${savedOrder.deliveryMethod})`} className="px-4 py-2 rounded border text-sm">Message on WhatsApp</a>
-                        </div>
-                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">Order Placed!</h3>
+                      <p className="text-gray-500 mb-6">
+                        Thank you for your order. <br />
+                        Order ID: <span className="font-mono font-bold text-gray-800">{savedOrder.id}</span>
+                      </p>
+                      <button
+                        onClick={() => { setShowSuccessModal(false); resetForm(); }}
+                        className="w-full bg-lime-600 text-white py-3 rounded-xl font-bold hover:bg-lime-700 transition-colors shadow-lg"
+                      >
+                        OK, Place New Order
+                      </button>
                     </div>
                   </div>
                 )}
@@ -424,8 +389,8 @@ export default function Contact() {
 
                   <div className="mt-6 grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600">Enter UTR / Transaction ID</label>
-                      <input value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="Eg: AX123456789012345" className={inputClass} disabled={status === 'sending'} />
+                      <label className="block text-sm text-gray-600">Enter UTR / Transaction ID (12 Digits)</label>
+                      <input value={utr} onChange={(e) => setUtr(e.target.value.replace(/\D/g, ''))} maxLength={12} placeholder="Eg: 123456789012" className={inputClass} disabled={status === 'sending'} />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600">Or Upload Payment Proof (screenshot)</label>
