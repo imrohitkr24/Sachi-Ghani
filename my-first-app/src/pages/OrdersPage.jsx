@@ -27,6 +27,10 @@ export default function OrdersPage() {
         } else if (data.orders && Array.isArray(data.orders)) {
           fetchedOrders = data.orders;
         }
+
+        // Sort explicitly by date descending (Recent first)
+        fetchedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
         setOrders(fetchedOrders);
         setLoading(false);
       })
