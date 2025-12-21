@@ -9,6 +9,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
@@ -194,6 +195,85 @@ app.post("/auth/login", authLimiter, async (req, res) => {
     });
   } catch (err) {
     console.error("Login error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Forgot Password
+app.post("/auth/forgot-password", authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Generate token
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // Set token and expiry (1 hour)
+    user.resetToken = token;
+    user.resetExpires = Date.now() + 3600000;
+
+    await user.save();
+
+    // Create reset link
+    const resetLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${token}`;
+
+    console.log(`[DEBUG] Reset Link for ${email}: ${resetLink}`);
+
+    // Email content
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Request - Sachi Ghani",
+      html: `
+        <h3>Password Reset Request</h3>
+        <p>You requested a password reset. Please click the link below to reset your password:</p>
+        <a href="${resetLink}" target="_blank">${resetLink}</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you did not request this, please ignore this email.</p>
+      `
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: "Password reset link sent to email" });
+  } catch (err) {
+    console.error("Forgot Password Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Reset Password
+app.post("/auth/reset-password", authLimiter, async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword)
+      return res.status(400).json({ message: "Missing token or password" });
+
+    // Find user with valid token
+    const user = await User.findOne({
+      resetToken: token,
+      resetExpires: { $gt: Date.now() }
+    });
+
+    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+
+    // Update password
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+
+    // Clear token fields
+    user.resetToken = undefined;
+    user.resetExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successful. You can now login." });
+  } catch (err) {
+    console.error("Reset Password Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

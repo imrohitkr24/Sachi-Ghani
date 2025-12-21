@@ -9,6 +9,9 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OrdersPage from './pages/OrdersPage';
 import FeedbackPage from './pages/FeedbackPage';
+import ForgotPassPage from './pages/ForgotPassPage';
+import ResetPassPage from './pages/ResetPassPage';
+
 // Header and WhatsAppButton are used in MainLayout, not here
 // Layouts
 import MainLayout from './components/layouts/MainLayout';
@@ -29,6 +32,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot" element={<ForgotPassPage />} />
+            <Route path="/reset-password" element={<ResetPassPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
 
             {/* Protected Shop Routes */}
