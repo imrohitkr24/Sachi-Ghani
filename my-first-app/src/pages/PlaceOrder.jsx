@@ -15,7 +15,7 @@ export default function PlaceOrder() {
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
   const [quantities, setQuantities] = useState({});
-  const [deliveryMethod, setDeliveryMethod] = useState('delivery');
+  const [deliveryMethod, setDeliveryMethod] = useState('pickup');
   const [paymentProof, setPaymentProof] = useState(null);
   const [paymentProofName, setPaymentProofName] = useState(null);
   const [form, setForm] = useState({ fullName: '', phone: '', address: '', district: '', pincode: '', utr: '' });
