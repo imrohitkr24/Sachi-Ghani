@@ -40,7 +40,7 @@ export default function Contact() {
   const [qty5l, setQty5l] = useState(0);
 
   // Payment & proof
-  const [deliveryMethod, setDeliveryMethod] = useState("delivery");
+  const [deliveryMethod, setDeliveryMethod] = useState("pickup");
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [utr, setUtr] = useState("");
   const [proofFile, setProofFile] = useState(null);
