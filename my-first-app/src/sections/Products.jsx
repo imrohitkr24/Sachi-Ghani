@@ -1,9 +1,33 @@
 import ProductCard from "../components/ProductCard.jsx";
 
 const products = [
-  { id: "500ml", name: "Mustard Oil 500 ml", price: "₹95", desc: "Everyday cooking & tadka", badge: "Best for small families", image: "/product-500ml.jpg" },
-  { id: "1l", name: "Mustard Oil 1 L", price: "₹165", desc: "Daily use & pickles", badge: "Most popular", image: "/product-1l.jpg" },
-  { id: "5l", name: "Mustard Oil 5 L Jar", price: "₹800", desc: "Bulk family pack", badge: "Value pack", image: "/product-5l.jpg" },
+  {
+    id: "500ml",
+    name: "Mustard Oil 500 ml",
+    price: "₹95",
+    desc: "Everyday cooking & tadka",
+    badge: "Best for small families",
+    image: "/product-500ml.jpg",
+    whatsappMessage: "Regarding 500 ml bottle that i what to know detail about the prodeuct"
+  },
+  {
+    id: "1l",
+    name: "Mustard Oil 1 L",
+    price: "₹165",
+    desc: "Daily use & pickles",
+    badge: "Most popular",
+    image: "/product-1l.jpg",
+    whatsappMessage: "I would like to know more about Mustard Oil 1 L"
+  },
+  {
+    id: "5l",
+    name: "Mustard Oil 5 L Jar",
+    price: "₹800",
+    desc: "Bulk family pack",
+    badge: "Value pack",
+    image: "/product-5l.jpg",
+    whatsappMessage: "I would like to know more about Mustard Oil 5 L Jar"
+  },
 ];
 
 export default function Products() {
