@@ -2,7 +2,12 @@ import React from 'react';
 
 const WhatsAppButton = () => {
     const phoneNumber = '918406831332';
-    const message = 'Hello! I would like to know more about Sachi Ghani products.';
+    const message = `Hello! I would like to know more about Sachi Ghani products.
+My query is regarding:
+1. Product Details
+2. Order Status
+3. New Order
+4. Other`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
     return (
