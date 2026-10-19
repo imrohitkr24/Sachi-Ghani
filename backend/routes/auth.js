@@ -15,7 +15,7 @@ router.post('/register', async (req,res)=>{
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(password, salt);
 
-    user = new User({ name, email, password: hashed });
+    user = new User({ name, email, passwordHash: hashed });
     await user.save();
 
     const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '7d' });
@@ -30,7 +30,7 @@ router.post('/login', async (req,res)=>{
     const user = await User.findOne({ email });
     if(!user) return res.status(400).json({ msg: 'Invalid credentials' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if(!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '7d' });

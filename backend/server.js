@@ -27,14 +27,15 @@ const app = express();
    BASIC CONFIG
 ======================= */
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 /* =======================
-   ✅ CORS (FINAL FIX)
+   ✅ CORS
 ======================= */
+const allowedOrigin = process.env.FRONTEND_URL || true;
 app.use(cors({
-  origin: true,
+  origin: allowedOrigin,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
